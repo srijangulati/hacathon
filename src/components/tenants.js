@@ -24,7 +24,7 @@ const DATA = [{
 export default class Tenants extends Component{
 
   state = {
-    data:[],
+    data:DATA,
     showModal:false,
     tenantName:null,
     addModal:false
@@ -64,11 +64,6 @@ export default class Tenants extends Component{
       Cell:props=><FontAwesome.FaTrash style={{color:'red',cursor:"pointer"}} size={20} onClick={()=>{this.deleteClicked(props.value)}}/>
     }]
     this.getTenants();
-    setTimeout(()=>{
-      this.setState({
-        data:DATA
-      });
-    },2000);
   }
 
   deleteClicked=(tenantName)=>{
@@ -93,7 +88,7 @@ export default class Tenants extends Component{
   getTenants=()=>{
     axios.get('/v1/tenants').then((res)=>{
       this.setState({
-        data:res
+        data:res.data
       })
     })
   }
@@ -102,6 +97,8 @@ export default class Tenants extends Component{
     let data = {"tenantName":tenantName};
     axios.post('/v1/tenant',data).then((res)=>{
       this.getTenants();
+    }).catch((err)=>{
+      console.log(err);
     });
   }
 
