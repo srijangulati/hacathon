@@ -6,6 +6,7 @@ import * as FontAwesome from 'react-icons/lib/fa';
 import DeleteModal from './modal/deleteModal';
 import AddTenantModal from "./modal/addTenantModal";
 import './../../node_modules/react-table/react-table.css';
+import axios from 'axios';
 
 
 const DATA = [{
@@ -23,7 +24,7 @@ const DATA = [{
 export default class Tenants extends Component{
 
   state = {
-    data:DATA,
+    data:[],
     showModal:false,
     tenantName:null,
     addModal:false
@@ -43,7 +44,6 @@ export default class Tenants extends Component{
 
   constructor(props){
     super(props);
-    this.data= DATA;
     this.columns = [{
       Header:"Name",
       accessor:'tenantName',
@@ -63,6 +63,12 @@ export default class Tenants extends Component{
       accessor:"tenantName",
       Cell:props=><FontAwesome.FaTrash style={{color:'red',cursor:"pointer"}} size={20} onClick={()=>{this.deleteClicked(props.value)}}/>
     }]
+    this.getTenants();
+    setTimeout(()=>{
+      this.setState({
+        data:DATA
+      });
+    },2000);
   }
 
   deleteClicked=(tenantName)=>{
@@ -84,6 +90,21 @@ export default class Tenants extends Component{
     });
   }
 
+  getTenants=()=>{
+    axios.get('/v1/tenants').then((res)=>{
+      this.setState({
+        data:res
+      })
+    })
+  }
+
+  addTenant=(tenantName)=>{
+    let data = {"tenantName":tenantName};
+    axios.post('/v1/tenant',data).then((res)=>{
+      this.getTenants();
+    });
+  }
+
   render(){
     return(
       <Grid>
@@ -101,6 +122,7 @@ export default class Tenants extends Component{
           <ReactTable
             data={this.state.data}
             columns={this.columns}
+            loading={this.state.data.length==0?true:false}
             showPagination={true}
             showPaginationTop={false}
             showPaginationBottom={true}
@@ -111,7 +133,7 @@ export default class Tenants extends Component{
           </Col>
         </Row>
         <DeleteModal show={this.state.showModal} tenantName={this.state.tenantName} close={this.handleClose} delete={this.deleteTenant}/>
-        <AddTenantModal show={this.state.addModal} close={this.handleAddClose} addTenant={(name)=>{console.log(name);}}/>
+        <AddTenantModal show={this.state.addModal} close={this.handleAddClose} addTenant={this.addTenant}/>
       </Grid>
     );
   }

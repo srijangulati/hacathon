@@ -15,8 +15,8 @@ class App extends Component {
     return (
       <Router>
         <div className="App">
-            <Route path="/tenants" render={(props)=><Tenants {...props}/>} />
-            <Route path="/tenant/:id" render={(props)=><Tenant {...props}/>}/>
+            <Route path='/' render={(props)=><Tenants {...props}/>} exact/>
+            <Route path='/tenant/:id' render={(props)=><Tenant {...props}/>}/>
         </div>
       </Router>
     );
