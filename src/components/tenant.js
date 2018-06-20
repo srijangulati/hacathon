@@ -5,23 +5,37 @@ import './../../node_modules/react-table/react-table.css';
 import axios from 'axios';
 
 const TENANT = {
-  mac:"00:14:22:01:23:45",
-  ip: "0:0:0:0",
-  name:'test',
-  connectedDevices:[{
-      mac:"00:14:22:01:23:00",
+  "customer1":{
+    ip: "10.197.104.76",
+    name:'customer 1',
+    connectedDevices:[{
+      mac:"A1A2A3A4A5A6",
       upTime:'107000',
-      ip:"0:0:0:1"
+      ip:""
     },
     {
-      mac:"00:14:22:01:23:11",
+      mac:"B1B2B3B4B5B6",
       upTime:'17000',
-      ip:"0:0:0:2"
+      ip:""
     }
-  ]
+  ]},
+  "customer2":{
+    ip: "10.197.104.77",
+    name:'customer 1',
+    connectedDevices:[{
+      mac:"C1C2C3C4C5C6",
+      upTime:'177000',
+      ip:""
+    },
+    {
+      mac:"D1D2D3D4D5D6",
+      upTime:'1117000',
+      ip:""
+    }
+  ]}
 };
 
-const COST_PER_HOUR ="0.01";
+const COST_PER_HOUR ="0.1";
 
 export default class Tenant extends Component{
   constructor(props){
@@ -37,12 +51,19 @@ export default class Tenant extends Component{
     },{
       id:"upTime",
       Header:"Up Time",
-      accessor:d=>Math.floor(d.upTime/(1000*60))+'mins',
+      accessor:d=>Math.floor(d.upTime/(60))+'mins',
     },{
       Header:'IP',
       accessor:'ip'
     }]
-    this.getTenant()
+    this.getTenant();
+    this.interval = setInterval(()=>{
+      this.getTenant();
+    }, 1000);
+  }
+
+  componentWillUnmount(){
+    clearInterval(this.interval);
   }
 
   deviceInfo(name,id){
@@ -59,19 +80,26 @@ export default class Tenant extends Component{
   }
 
   getTenant=()=>{
-    setInterval(()=>{
+    axios.get('/v1/dummy').then((res)=>{
+      let tempData = [];
+      res.data.connectedDevices = res.data.connectedDevices.filter((cd)=>cd.mac);
       this.setState({
-        tenant:TENANT
-      })
-    }, 1000);
+        tenant:res.data
+      });
+    });
+    // setInterval(()=>{
+    //   this.setState({
+    //     tenant:TENANT[this.props.match.params.id]
+    //   })
+    // }, 1000);
   }
 
   netTime=()=>{
     let time = 0;
     this.state.tenant.connectedDevices.map((c)=>{
-      time+=parseInt(c.upTime,10);
+      time+=Math.floor(parseInt(c.upTime,10)/(60));
     });
-    return Math.floor(time/(1000*60));
+    return time;
   }
 
   loading=()=>{
@@ -105,7 +133,7 @@ export default class Tenant extends Component{
           <Col md={4}>
             <Jumbotron>
               <h3>Cost</h3>
-              <p>{Math.floor(this.netTime()*(COST_PER_HOUR/60))+"$"}</p>
+              <p>{(this.netTime()*(COST_PER_HOUR/60)).toFixed(2)+"$"}</p>
             </Jumbotron>
           </Col>
         </Row>
@@ -113,8 +141,7 @@ export default class Tenant extends Component{
           <Col md={6}>
             <PageHeader>Tenant Info</PageHeader>
             {this.deviceInfo('Tenant Name','name')}
-            {this.deviceInfo('Tenant Mac','mac')}
-            {this.deviceInfo('Tenant Ip','ip')}
+            {this.deviceInfo('Gateway Ip','ip')}
           </Col>
           <Col md={6}>
             <PageHeader>Connected Devices</PageHeader>

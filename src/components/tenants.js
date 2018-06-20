@@ -10,14 +10,14 @@ import axios from 'axios';
 
 
 const DATA = [{
-  tenantName: "Test",
-  clientCount:2,
-  tenantIp:"0.0.0.0",
+  tenantName: "customer1",
+  clientCount:0,
+  tenantIp:"10.197.104.76",
   status:true
 },{
-  tenantName: "Test1",
-  clientCount:2,
-  tenantIp:"0.0.0.0",
+  tenantName: "customer2",
+  clientCount:0,
+  tenantIp:"10.197.104.77",
   status:true
 }];
 
@@ -63,7 +63,7 @@ export default class Tenants extends Component{
       accessor:"tenantName",
       Cell:props=><FontAwesome.FaTrash style={{color:'red',cursor:"pointer"}} size={20} onClick={()=>{this.deleteClicked(props.value)}}/>
     }]
-    this.getTenants();
+    //this.getTenants();
   }
 
   deleteClicked=(tenantName)=>{
@@ -74,9 +74,13 @@ export default class Tenants extends Component{
   }
 
   deleteTenant=()=>{
+    axios.delete('/v1/tenant/'+this.state.tenantName).then((res)=>{
+      console.log(res);
+      this.getTenants();
+    })
     this.setState({
       showModal:false
-    })
+    });
   }
 
   addModal=()=>{
